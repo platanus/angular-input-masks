@@ -10,12 +10,13 @@ function MoneyMaskDirective($locale, $parse, PreFormatters) {
 		link: function(scope, element, attrs, ctrl) {
 			var decimalDelimiter = $locale.NUMBER_FORMATS.DECIMAL_SEP,
 				thousandsDelimiter = $locale.NUMBER_FORMATS.GROUP_SEP,
-				currencySym = $locale.NUMBER_FORMATS.CURRENCY_SYM,
+				currencySym = (typeof (attrs.currencySymbol) !== 'undefined') ? attrs.currencySymbol : $locale.NUMBER_FORMATS.CURRENCY_SYM,
 				decimals = $parse(attrs.uiMoneyMask)(scope);
 
 			function maskFactory(decimals) {
 				var decimalsPattern = decimals > 0 ? decimalDelimiter + new Array(decimals + 1).join('0') : '';
-				var maskPattern = currencySym + ' #' + thousandsDelimiter + '##0' + decimalsPattern;
+				var currencySymbolPattern = (currencySym) ? currencySym + ' #' : '#';
+				var maskPattern = currencySymbolPattern + thousandsDelimiter + '##0' + decimalsPattern;
 				return new StringMask(maskPattern, {reverse: true});
 			}
 
