@@ -171,11 +171,25 @@ function MoneyMaskDirective($locale, $parse, PreFormatters) {
 				return prefix + moneyMask.apply(valueToFormat);
 			}
 
+			function countNaNCharacters(value) {
+				var count = 0;
+
+				for (var i = 0; i < value.length; i++) {
+					if (isNaN(value[i])) {
+						count += 1;
+					}
+				}
+
+				return count;
+			}
+
 			function parser(value) {
 				if (ctrl.$isEmpty(value)) {
 					return value;
 				}
 
+				var nanCharsCount = countNaNCharacters(value);
+				var currentCaretPosition = element[0].selectionStart;
 				var actualNumber = value.replace(/[^\d]+/g,'');
 				actualNumber = actualNumber.replace(/^[0]+([1-9])/,'$1');
 				actualNumber = actualNumber || '0';
@@ -196,6 +210,13 @@ function MoneyMaskDirective($locale, $parse, PreFormatters) {
 				if (value !== formatedValue) {
 					ctrl.$setViewValue(formatedValue);
 					ctrl.$render();
+					var currentNanCharsCount = countNaNCharacters(formatedValue);
+					var offset = currentNanCharsCount - nanCharsCount;
+					if (currentCaretPosition === 0 && offset < 0) {
+						offset = 0;
+					}
+					var newCaretPos = currentCaretPosition + offset;
+					element[0].setSelectionRange(newCaretPos, newCaretPos);
 				}
 
 				return formatedValue ? parseInt(formatedValue.replace(/[^\d\-]+/g,''))/Math.pow(10,decimals) : null;
